@@ -1,41 +1,42 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../firebaseConfig'
 
 const Login = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({ username: "", password: "" });
+  const navigate = useNavigate()
+  const [user, setUser] = useState({ email: '', password: '' })
 
   function handleChange(event) {
-    setUser({ ...user, [event.target.id]: event.target.value });
+    setUser({ ...user, [event.target.id]: event.target.value })
   }
   // This function is being used in two places. It can be extracted to a helpers.js file
 
   // Login Function
   async function handleSubmit(e) {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard"); // Adjust the route as necessary
+      await signInWithEmailAndPassword(auth, user.email, user.password)
+      navigate('/dashboard') // Adjust the route as necessary
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Failed to log in");
+      console.error('Login error:', error)
+      alert('Failed to log in')
+      setUser({ email: '', password: '' })
     }
   }
 
   //Demo User Login Function
   async function handleDemoSignIn(e) {
-    e.preventDefault();
-    const user = { email: "demo@me.com", password: "password" };
+    e.preventDefault()
+    const user = { email: 'demo@me.com', password: 'password' }
     try {
-      await signInWithEmailAndPassword(auth, user.email, user.password);
-      navigate("/dashboard"); // Adjust the route as necessary
+      await signInWithEmailAndPassword(auth, user.email, user.password)
+      navigate('/dashboard') // Adjust the route as necessary
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Failed to log in");
+      console.error('Login error:', error)
+      alert('Failed to log in')
     }
   }
 
@@ -81,7 +82,7 @@ const Login = () => {
         No Account? <Link to="/register">Register</Link>
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

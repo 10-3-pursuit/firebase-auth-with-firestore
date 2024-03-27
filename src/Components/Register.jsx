@@ -1,37 +1,39 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../firebaseConfig"; // Ensure you import your Firestore instance
+import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { doc, setDoc } from 'firebase/firestore'
+import { auth, db } from '../firebaseConfig' // Ensure you import your Firestore instance
 
 const Register = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState({ username: "", password: "", email: "" });
+  const navigate = useNavigate()
+  const [user, setUser] = useState({ username: '', password: '', email: '' })
 
   function handleChange(event) {
-    setUser({ ...user, [event.target.id]: event.target.value });
+    setUser({ ...user, [event.target.id]: event.target.value })
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
+    e.preventDefault()
     try {
+      console.log(user)
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         user.email,
         user.password
-      );
-      const user = userCredential.user;
+      )
+      const newUser = userCredential.user
       // Now, store the additional information in Firestore
-      await setDoc(doc(db, "users", user.uid), {
+      console.log('new', newUser)
+      await setDoc(doc(db, 'users', newUser.uid), {
         username: user.username,
         // Add other fields as needed
-      });
+      })
       // Navigate to dashboard or show success message
-      navigate("/dashboard");
+      navigate('/dashboard')
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("Failed to register");
+      console.error('Registration error:', error)
+      alert('Failed to register')
     }
   }
 
@@ -84,7 +86,7 @@ const Register = () => {
         Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register
