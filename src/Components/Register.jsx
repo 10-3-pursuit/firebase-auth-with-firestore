@@ -5,7 +5,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig"; // Ensure you import your Firestore instance
 
-const Register = () => {
+const Register = ({ setLoggedIn }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState({ username: "", password: "", email: "" });
 
@@ -22,18 +22,31 @@ const Register = () => {
         user.email,
         user.password
       );
-      const newUser = userCredential.user;
-      //Store the user in localStorage
+      if (userCredential) {
+        await setLoggedIn(true);
 
-      // Store any additional information outside of email and password in Firestore
-      await setDoc(doc(db, "users", newUser.uid), {
-        username: user.username,
-        // Add other fields as needed except for email and password
-      });
-      // CHANGE THIS----Navigate to dashboard or your chosen view
-      navigate("/dashboard");
+        const newUser = userCredential.user;
+        //Store the user in localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: newUser.uid,
+            email: newUser.email,
+            lastSignIn: newUser.metadata.lastSignInTime,
+            username: user.username,
+          })
+        );
+        // Store any additional information outside of email and password in Firestore
+        await setDoc(doc(db, "users", newUser.uid), {
+          username: user.username,
+          // Add other fields as needed except for email and password
+        });
+        // CHANGE THIS----Navigate to dashboard or your chosen view
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Registration error:", error);
+      await setLoggedIn(false);
       alert("Failed to register");
     }
   }

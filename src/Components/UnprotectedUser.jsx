@@ -1,32 +1,27 @@
-import { useAuth } from '../Components/ProtectedRoute'
-import { Link, useNavigate } from 'react-router-dom'
-import { signOut } from 'firebase/auth'
-import { auth } from '../firebaseConfig'
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
-const UnprotectedUser = () => {
-  const { user, profile } = useAuth()
-
-  const navigate = useNavigate()
-
-  async function handleLogout() {
-    try {
-      await signOut(auth)
-      navigate('/login')
-    } catch (error) {
-      console.error('Logout Error:', error)
-    }
-  }
+const UnprotectedUser = ({ handleLogout }) => {
+  const [user] = useState(JSON.parse(localStorage.getItem("user") || null));
 
   return (
     <div>
       <h1>UnprotectedUser</h1>
-      {profile && (
+      {user && (
         <div>
           <h2>
-            Hello {profile.username.toUpperCase()}. You are logged in and we can
+            Hello {user.username.toUpperCase()}. You are logged in and we can
             show you something worthwhile based on that
           </h2>
-          <button onClick={handleLogout}>Logout</button>
+          <button
+            onClick={() => {
+              handleLogout();
+              navigate("/login");
+              setUser(null);
+            }}
+          >
+            <Link to="/login">Logout</Link>
+          </button>
         </div>
       )}
       {!user && (
@@ -34,14 +29,14 @@ const UnprotectedUser = () => {
           No user is logged in but I will let you see this component anyway.
           <div>
             <button>
-              {' '}
+              {" "}
               <Link to="/login">Login</Link>
             </button>
           </div>
         </h2>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default UnprotectedUser
+export default UnprotectedUser;

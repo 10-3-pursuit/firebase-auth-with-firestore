@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
-const Login = () => {
+const Login = ({ setLoggedIn }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState({ email: "", password: "" });
 
@@ -14,15 +16,37 @@ const Login = () => {
   // This function is being used in two places. It can be extracted to a helpers.js file
   async function firebaseSignIn(emailPass) {
     try {
-      await signInWithEmailAndPassword(
+      const userCredential = await signInWithEmailAndPassword(
         auth,
         emailPass.email,
         emailPass.password
       );
-      navigate("/dashboard"); // Adjust the route as necessary to go to the view you want
+      const loggedUser = userCredential.user;
+
+      if (loggedUser) {
+        const docRef = doc(db, "users", loggedUser.uid);
+        const docSnap = await getDoc(docRef);
+        await setLoggedIn(true);
+
+        if (docSnap.exists()) {
+          loggedUser.username = docSnap.data().username;
+        }
+        // Store user in localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            id: loggedUser.uid,
+            email: loggedUser.email,
+            lastSignIn: loggedUser.metadata.lastSignInTime,
+            username: loggedUser.username,
+          })
+        );
+        navigate("/dashboard"); // Adjust the route as necessary to go to the view you want
+      }
     } catch (error) {
       console.error("Login error:", error);
       alert("Failed to log in");
+      setLoggedIn(false);
       setUser({ email: "", password: "" });
     }
   }

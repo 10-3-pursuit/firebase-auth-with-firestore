@@ -1,59 +1,59 @@
 // src/components/ProtectedRoute.jsx
-import { useState, useEffect } from 'react'
-import { Navigate, Outlet } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { Navigate, Outlet } from "react-router-dom";
 
-import { onAuthStateChanged } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
-import { auth, db } from '../firebaseConfig'
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";
 
 async function fetchUserProfile(uid) {
-  const docRef = doc(db, 'users', uid)
-  const docSnap = await getDoc(docRef)
-  console.log(docSnap)
+  const docRef = doc(db, "users", uid);
+  const docSnap = await getDoc(docRef);
+  console.log(docSnap.data());
   if (docSnap.exists()) {
-    return docSnap.data() // Returns the additional fields stored in Firestore
+    return docSnap.data(); // Returns the additional fields stored in Firestore
   } else {
-    console.log('No such document!')
-    return null
+    console.log("No such document!");
+    return null;
   }
 }
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState()
-  const [profile, setProfile] = useState(null) // State to hold additional user info
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState();
+  const [profile, setProfile] = useState(null); // State to hold additional user info
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setIsAuthenticated(true)
-        setUser(user)
-        const userProfile = await fetchUserProfile(user.uid)
-        console.log('user', user, 'profile', userProfile)
-        setProfile(userProfile) // Set the additional user info
+        setIsAuthenticated(true);
+        setUser(user);
+        const userProfile = await fetchUserProfile(user.uid);
+        console.log("user", user, "profile", userProfile);
+        setProfile(userProfile); // Set the additional user info
       } else {
-        setIsAuthenticated(false)
-        setUser(null)
-        setProfile(null) // Clear the additional user info
+        setIsAuthenticated(false);
+        setUser(null);
+        setProfile(null); // Clear the additional user info
       }
-      setIsLoading(false)
-    })
+      setIsLoading(false);
+    });
 
-    return () => unsubscribe() // Cleanup on unmount
-  }, [])
+    return () => unsubscribe(); // Cleanup on unmount
+  }, []);
 
-  return { isAuthenticated, isLoading, user, profile }
-}
+  return { isAuthenticated, isLoading, user, profile };
+};
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading, user, profile } = useAuth()
+  const { isAuthenticated, isLoading, user, profile } = useAuth();
   if (isLoading) {
     return (
       <div>
         <h1>Loading...</h1>
       </div>
-    )
+    );
   }
 
   if (!isAuthenticated) {
@@ -61,10 +61,10 @@ const ProtectedRoute = () => {
     // trying to go to when they were redirected. This allows us to send them
     // along to that page after they login, which is a nicer user experience
     // than dropping them off on the home page.
-    return <Navigate to="/login" replace />
+    return <Navigate to="/login" replace />;
   }
 
-  return <Outlet context={{ user, profile }} /> // If authenticated, continue rendering the component the route is pointing to
-}
+  return <Outlet context={{ user, profile }} />; // If authenticated, continue rendering the component the route is pointing to
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;
