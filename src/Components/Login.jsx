@@ -1,43 +1,42 @@
-import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '../firebaseConfig'
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 const Login = () => {
-  const navigate = useNavigate()
-  const [user, setUser] = useState({ email: '', password: '' })
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ email: "", password: "" });
 
   function handleChange(event) {
-    setUser({ ...user, [event.target.id]: event.target.value })
+    setUser({ ...user, [event.target.id]: event.target.value });
   }
   // This function is being used in two places. It can be extracted to a helpers.js file
+  async function firebaseSignIn(emailPass) {
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        emailPass.email,
+        emailPass.password
+      );
+      navigate("/dashboard"); // Adjust the route as necessary to go to the view you want
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Failed to log in");
+      setUser({ email: "", password: "" });
+    }
+  }
 
   // Login Function
-  async function handleSubmit(e) {
-    e.preventDefault()
-
-    try {
-      await signInWithEmailAndPassword(auth, user.email, user.password)
-      navigate('/dashboard') // Adjust the route as necessary
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('Failed to log in')
-      setUser({ email: '', password: '' })
-    }
+  function handleSubmit(e) {
+    e.preventDefault();
+    firebaseSignIn({ email: user.email, password: user.password });
   }
 
   //Demo User Login Function
-  async function handleDemoSignIn(e) {
-    e.preventDefault()
-    const user = { email: 'demo@me.com', password: 'password' }
-    try {
-      await signInWithEmailAndPassword(auth, user.email, user.password)
-      navigate('/dashboard') // Adjust the route as necessary
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('Failed to log in')
-    }
+  function handleDemoSignIn(e) {
+    e.preventDefault();
+    firebaseSignIn({ email: "demo@me.com", password: "password" });
   }
 
   // BUILD OUT YOUR FORM PROPERLY WITH LABELS AND WHATEVER CSS FRAMEWORK YOU MAY USE OR VANILLA CSS. THIS IS JUST A BOILERPLATE
@@ -82,7 +81,7 @@ const Login = () => {
         No Account? <Link to="/register">Register</Link>
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
